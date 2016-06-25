@@ -1,4 +1,5 @@
 REC
+SRC .
 PKG omd
 PKG cow
 PKG xmlm

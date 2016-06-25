@@ -163,7 +163,7 @@ module Create : sig
   type t = Xml.t
 
   val stylesheet : string -> t
-  (** [stylesheet style] converts a COW CSS type to a valid HTML stylesheet *)
+  (** [stylesheet style] converts a CSS string to a valid HTML stylesheet *)
 
   val table :
     ?flags:(Tags.table_flags list) ->
