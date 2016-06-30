@@ -149,6 +149,18 @@ module Create : sig
       | Rgba of char * char * char * char
       | Rgb of char * char * char
 
+    type form_field =
+        string
+      * string option
+      * [ `Text of string
+      | `Radio of string list
+      | `Submit
+      | `Select of string list
+      | `Datalist of string list
+      | `Textarea of string * int * int ] (* default value, rows, columns *)
+      (** a `form_field` is a string representing the name of a field in an HTML
+       * form along with the field's label a descriptor of that field *)
+
     type table_flags =
         Headings_fst_col
       | Headings_fst_row

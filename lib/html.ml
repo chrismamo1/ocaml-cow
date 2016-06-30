@@ -407,6 +407,16 @@ module Create = struct
       | Rgba of char * char * char * char
       | Rgb of char * char * char
 
+    type form_field =
+        string
+      * string option
+      * [ `Text of string
+      | `Radio of string list
+      | `Submit
+      | `Select of string list
+      | `Datalist of string list
+      | `Textarea of string * int * int ]
+
   let color_of_string ?(fmt = `Hex) s =
     let s = String.lowercase_ascii s in
     let coi = char_of_int in
