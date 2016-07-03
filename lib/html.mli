@@ -162,7 +162,7 @@ module Create : sig
       | `Textarea of string * int * int (* default value, rows, columns *)
       | `Password ]
       (** a `form_field` is a string representing the name of a field in an HTML
-       * form along with the field's label and a descriptor of that field *)
+       * form along with the field's label and a descriptor of that field. *)
 
     type table_flags =
         Headings_fst_col
@@ -234,6 +234,39 @@ let table = Cow.Html.Create ~flags:[Headings_fst_row] ~row data
   (** [form ~action:url ~meth:method fields] produces an HTML form with the
    * fields described by [fields], with the action pointed to by [url], using
    * the method indicated my [method].
+   *
+   * See the following code:
+{[
+let form_fields =
+  [ "username", (Some "Username"), (`Text "")
+  ; "password", (Some "Password"), `Password
+  ; "submit", None, `Submit ]
+in
+Cow.Html.Create.form ~action:"login" ~meth:`POST form_fields
+]}
+     which produces the following HTML:
+{%html
+<!DOCTYPE html>
+<form action="login" method="post">
+  <div>
+    <label for="cowlabel_username">Username</label>
+    <span name="cowlabel_username">
+      <input name="username" type="text"></input>
+    </span>
+  </div>
+  <div>
+    <label for="cowlabel_password">Password</label>
+    <span name="cowlabel_password">
+      <input name="password" type="password"/>
+    </span>
+  </div>
+  <div>
+    <span name="cowlabel_submit">
+      <input type="submit" name="submit"/>
+    </span>
+  </div>
+</form>
+%}
    *
    * notes: this is a work in progress, in particular the [form_field list] is
    * a bit of a mess. I plan on adding additional functionality in the future,
