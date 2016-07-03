@@ -507,93 +507,106 @@ module Create = struct
       Xml.tag "table" rows
     in aux
 
-  let form ~action ~(meth:form_method) (fields : Tags.form_field list) =
-    (* start by walking through the list of form fields and converting each one
-     * into an Xml.t representation. The XML representation consists of a
-     * [form] element will be wrapped in a [div]. This [div] will contain the
-     * actual form item, wrapped in a [span], as well as possibly a label *)
-    let fields =
-      List.map
-        (fun {name; label; field = ftype} ->
-          let lbl =
-            match label with
-            | Some label ->
-              Xml.tag
-                "label"
-                ~attrs:["for", "cowlabel_" ^ name]
-                (Xml.string label)
-            | None ->
-                Xml.empty
-          in
-          let input =
-            match ftype with
-            | `Text default ->
+  let form ~action ~(meth:form_method) =
+    (* partially applying the [Xml.tag] function at the very beginning in order
+     * to create a more smooth performance profile when this function is
+     * partially applied. I'm not 100% sure that this will actually work, but it
+     * can't possibly hurt anything. [form_bldr] function will be seen again at
+     * the very end of this function. *)
+    let form_bldr =
+      Xml.tag
+        "form"
+        ~attrs:
+          [ "action", action
+          ; "method", (match meth with `GET -> "get" | `POST -> "post")]
+    in
+    fun (fields : Tags.form_field list) ->
+      (* start by walking through the list of form fields and converting each
+       * one into an Xml.t representation. The XML representation consists of a
+       * [form] element will be wrapped in a [div]. This [div] will contain the
+       * actual form item, wrapped in a [span], as well as possibly a label *)
+      let fields =
+        List.map
+          (fun {name; label; field = ftype} ->
+            let lbl =
+              match label with
+              | Some label ->
                 Xml.tag
-                  "input"
-                  ~attrs:
-                    [ "name", name
-                    ; "type", "text" ]
-                  (Xml.string default)
-            | `Radio values ->
-                let builder v : t =
+                  "label"
+                  ~attrs:["for", "cowlabel_" ^ name]
+                  (Xml.string label)
+              | None ->
+                  Xml.empty
+            in
+            let input =
+              match ftype with
+              | `Text default ->
                   Xml.tag
                     "input"
                     ~attrs:
                       [ "name", name
-                      ; "type", "radio"
-                      ; "value", v ]
-                    (Xml.string v)
-                in
-                List.fold_left
-                  (fun acc value ->
-                    acc ++ builder value)
-                  Xml.empty
-                  values
-            | `Submit ->
-                Xml.tag
-                  "input"
-                  ~attrs:["type", "submit"; "name", name]
-                  Xml.empty
-            | `Select options ->
-                let options =
-                  List.map
-                    (fun o ->
-                      Xml.tag
-                        "option"
-                        ~attrs:["value", o]
-                        (Xml.string o))
-                    options
-                in
-                let options = List.fold_left (++) (List.hd options) (List.tl options) in
-                Xml.tag "select" ~attrs:["name", name] options
-            | `Textarea (default, rows, cols) ->
-                Xml.tag
-                  "textarea"
-                  ~attrs:
-                    [ "name", name
-                    ; "rows", string_of_int rows
-                    ; "cols", string_of_int cols ]
-                  (Xml.string default)
-            | `Password ->
-                Xml.tag
-                  "input"
-                  ~attrs:
-                    [ "name", name
-                    ; "type", "password" ]
-                  Xml.empty
-          in
-          input
-          |> Xml.tag "span" ~attrs:["name", ("cowlabel_" ^ name)]
-          |> fun input -> lbl ++ input
-          |> Xml.tag ~attrs:[] "div")
-        fields
-    in
-    Xml.tag
-      "form"
-      ~attrs:
-        [ "action", action
-        ; "method", (match meth with `GET -> "get" | `POST -> "post")]
-      (Xml.list fields)
+                      ; "type", "text" ]
+                    (Xml.string default)
+              | `Radio values ->
+                  let builder v : t =
+                    Xml.tag
+                      "input"
+                      ~attrs:
+                        [ "name", name
+                        ; "type", "radio"
+                        ; "value", v ]
+                      (Xml.string v)
+                  in
+                  List.fold_left
+                    (fun acc value ->
+                      acc ++ builder value)
+                    Xml.empty
+                    values
+              | `Submit ->
+                  Xml.tag
+                    "input"
+                    ~attrs:["type", "submit"; "name", name]
+                    Xml.empty
+              | `Select options ->
+                  let options =
+                    List.map
+                      (fun o ->
+                        Xml.tag
+                          "option"
+                          ~attrs:["value", o]
+                          (Xml.string o))
+                      options
+                  in
+                  let options =
+                    List.fold_left
+                      (++)
+                      (List.hd options)
+                      (List.tl options)
+                  in
+                  Xml.tag "select" ~attrs:["name", name] options
+              | `Textarea (default, rows, cols) ->
+                  Xml.tag
+                    "textarea"
+                    ~attrs:
+                      [ "name", name
+                      ; "rows", string_of_int rows
+                      ; "cols", string_of_int cols ]
+                    (Xml.string default)
+              | `Password ->
+                  Xml.tag
+                    "input"
+                    ~attrs:
+                      [ "name", name
+                      ; "type", "password" ]
+                    Xml.empty
+            in
+            input
+            |> Xml.tag "span" ~attrs:["name", ("cowlabel_" ^ name)]
+            |> fun input -> lbl ++ input
+            |> Xml.tag ~attrs:[] "div")
+          fields
+      in
+      form_bldr (Xml.list fields)
 end
 
 let script ?src ?typ ?charset body =
