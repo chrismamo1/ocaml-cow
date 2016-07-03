@@ -231,8 +231,10 @@ let table = Cow.Html.Create ~flags:[Headings_fst_row] ~row data
     action:string ->
     meth:Tags.form_method ->
     Tags.form_field list -> t
-  (** [form ~action:url fields] produces an HTML form with the fields described
-   * by [fields], with the action pointed to by [url].
+  (** [form ~action:url ~meth:method fields] produces an HTML form with the
+   * fields described by [fields], with the action pointed to by [url], using
+   * the method indicated my [method].
+   *
    * notes: this is a work in progress, in particular the [form_field list] is
    * a bit of a mess. I plan on adding additional functionality in the future,
    * but only through optional parameters, so the current signature contains
