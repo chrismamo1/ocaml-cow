@@ -153,16 +153,23 @@ module Create : sig
       [ `GET | `POST ]
 
     type form_field =
-        string
-      * string option
-      * [ `Text of string
-      | `Radio of string list
-      | `Submit
-      | `Select of string list
-      | `Textarea of string * int * int (* default value, rows, columns *)
-      | `Password ]
-      (** a `form_field` is a string representing the name of a field in an HTML
-       * form along with the field's label and a descriptor of that field. *)
+      { name: string
+        (** the name of the field, as it will appear in the [get]/[post] request
+         * to the server *)
+      ; label: string option
+        (** the text of the label to attach to this field, or [None] if the
+         * field should go unlabeled *)
+      ; field:
+        [ `Text of string
+        | `Radio of string list
+        | `Submit
+        | `Select of string list
+        | `Textarea of string * int * int (* default value, rows, columns *)
+        | `Password ]
+        (** a descriptor of the field itself *) }
+        (** a [form_field] is a string representing the name of a field in an
+         * HTML form along with the field's label and a descriptor of that
+         * field. *)
 
     type table_flags =
         Headings_fst_col
@@ -230,7 +237,8 @@ let table = Cow.Html.Create ~flags:[Headings_fst_row] ~row data
   val form :
     action:string ->
     meth:Tags.form_method ->
-    Tags.form_field list -> t
+    Tags.form_field list ->
+    t
   (** [form ~action:url ~meth:method fields] produces an HTML form with the
    * fields described by [fields], with the action pointed to by [url], using
    * the method indicated my [method].
@@ -238,9 +246,9 @@ let table = Cow.Html.Create ~flags:[Headings_fst_row] ~row data
    * See the following code:
 {[
 let form_fields =
-  [ "username", (Some "Username"), (`Text "")
-  ; "password", (Some "Password"), `Password
-  ; "submit", None, `Submit ]
+  [ {name = "username"; label = Some "Username"; field = `Text ""}
+  ; {name = "password"; label = Some "Password"; field = `Password}
+  ; {name = "submit"; label = None; field = `Submit } ]
 in
 Cow.Html.Create.form ~action:"login" ~meth:`POST form_fields
 ]}

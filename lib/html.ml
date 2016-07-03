@@ -411,14 +411,15 @@ module Create = struct
       [ `GET | `POST ]
 
     type form_field =
-        string
-      * string option
-      * [ `Text of string
-      | `Radio of string list
-      | `Submit
-      | `Select of string list
-      | `Textarea of string * int * int
-      | `Password ]
+      { name: string
+      ; label: string option
+      ; field:
+        [ `Text of string
+        | `Radio of string list
+        | `Submit
+        | `Select of string list
+        | `Textarea of string * int * int
+        | `Password ] }
 
   let color_of_string ?(fmt = `Hex) s =
     let s = String.lowercase_ascii s in
@@ -513,7 +514,7 @@ module Create = struct
      * actual form item, wrapped in a [span], as well as possibly a label *)
     let fields =
       List.map
-        (fun (name, label, ftype) ->
+        (fun {name; label; field = ftype} ->
           let lbl =
             match label with
             | Some label ->
