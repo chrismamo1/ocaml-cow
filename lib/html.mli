@@ -149,6 +149,9 @@ module Create : sig
       | Rgba of char * char * char * char
       | Rgb of char * char * char
 
+    type form_method =
+      [ `GET | `POST ]
+
     type form_field =
         string
       * string option
@@ -156,10 +159,10 @@ module Create : sig
       | `Radio of string list
       | `Submit
       | `Select of string list
-      | `Datalist of string list
-      | `Textarea of string * int * int ] (* default value, rows, columns *)
+      | `Textarea of string * int * int (* default value, rows, columns *)
+      | `Password ]
       (** a `form_field` is a string representing the name of a field in an HTML
-       * form along with the field's label a descriptor of that field *)
+       * form along with the field's label and a descriptor of that field *)
 
     type table_flags =
         Headings_fst_col
@@ -223,6 +226,19 @@ let table = Cow.Html.Create ~flags:[Headings_fst_row] ~row data
 </table>
 %}
 *)
+
+  val form :
+    action:string ->
+    meth:Tags.form_method ->
+    Tags.form_field list -> t
+  (** [form ~action:url fields] produces an HTML form with the fields described
+   * by [fields], with the action pointed to by [url].
+   * notes: this is a work in progress, in particular the [form_field list] is
+   * a bit of a mess. I plan on adding additional functionality in the future,
+   * but only through optional parameters, so the current signature contains
+   * everything that is absolutely necessary to make a complete and functional
+   * HTML form. The [action] parameter could also maybe be converted into a
+   * dedicated [uri] type, although I tend not to like this sort of thing. *)
 end
 
 (** {1 HTML nodes} *)

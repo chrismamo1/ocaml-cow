@@ -407,6 +407,9 @@ module Create = struct
       | Rgba of char * char * char * char
       | Rgb of char * char * char
 
+    type form_method =
+      [ `GET | `POST ]
+
     type form_field =
         string
       * string option
@@ -414,8 +417,8 @@ module Create = struct
       | `Radio of string list
       | `Submit
       | `Select of string list
-      | `Datalist of string list
-      | `Textarea of string * int * int ]
+      | `Textarea of string * int * int
+      | `Password ]
 
   let color_of_string ?(fmt = `Hex) s =
     let s = String.lowercase_ascii s in
@@ -500,9 +503,96 @@ module Create = struct
       in
       let rows = List.map (fun r -> let r = List.flatten r in tr r) rows in
       let rows = concat rows in
-      Xml.tag "table"rows
+      Xml.tag "table" rows
     in aux
 
+  let form ~action ~(meth:form_method) (fields : Tags.form_field list) =
+    (* start by walking through the list of form fields and converting each one
+     * into an Xml.t representation. The XML representation consists of a
+     * [form] element will be wrapped in a [div]. This [div] will contain the
+     * actual form item, wrapped in a [span], as well as possibly a label *)
+    let fields =
+      List.map
+        (fun (name, label, ftype) ->
+          let lbl =
+            match label with
+            | Some label ->
+              Xml.tag
+                "label"
+                ~attrs:["for", name]
+                (Xml.string label)
+            | None ->
+                Xml.empty
+          in
+          let input =
+            match ftype with
+            | `Text default ->
+                Xml.tag
+                  "input"
+                  ~attrs:
+                    [ "name", name
+                    ; "type", "text" ]
+                  (Xml.string default)
+            | `Radio values ->
+                let builder v : t =
+                  Xml.tag
+                    "input"
+                    ~attrs:
+                      [ "name", name
+                      ; "type", "radio"
+                      ; "value", v ]
+                    (Xml.string v)
+                in
+                List.fold_left
+                  (fun acc value ->
+                    acc ++ builder value)
+                  Xml.empty
+                  values
+            | `Submit ->
+                Xml.tag
+                  "input"
+                  ~attrs:["type", "submit"; "name", name]
+                  Xml.empty
+            | `Select options ->
+                let options =
+                  List.map
+                    (fun o ->
+                      Xml.tag
+                        "option"
+                        ~attrs:["value", o]
+                        (Xml.string o))
+                    options
+                in
+                let options = List.fold_left (++) (List.hd options) (List.tl options) in
+                Xml.tag "select" ~attrs:["name", name] options
+            | `Textarea (default, rows, cols) ->
+                Xml.tag
+                  "textarea"
+                  ~attrs:
+                    [ "name", name
+                    ; "rows", string_of_int rows
+                    ; "cols", string_of_int cols ]
+                  (Xml.string default)
+            | `Password ->
+                Xml.tag
+                  "input"
+                  ~attrs:
+                    [ "name", name
+                    ; "type", "password" ]
+                  Xml.empty
+          in
+          input
+          |> Xml.tag "span" ~attrs:["name", ("cowlabel_" ^ name)]
+          |> fun input -> lbl ++ input
+          |> Xml.tag ~attrs:[] "div")
+        fields
+    in
+    Xml.tag
+      "form"
+      ~attrs:
+        [ "action", action
+        ; "method", (match meth with `GET -> "get" | `POST -> "post")]
+      (Xml.list fields)
 end
 
 let script ?src ?typ ?charset body =
