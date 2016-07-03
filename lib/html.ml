@@ -519,7 +519,7 @@ module Create = struct
             | Some label ->
               Xml.tag
                 "label"
-                ~attrs:["for", name]
+                ~attrs:["for", "cowlabel_" ^ name]
                 (Xml.string label)
             | None ->
                 Xml.empty
