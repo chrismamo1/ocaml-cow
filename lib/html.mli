@@ -235,6 +235,8 @@ let table = Cow.Html.Create ~flags:[Headings_fst_row] ~row data
 *)
 
   val form :
+    ?name:string option ->
+    ?attrs:(string * string) list ->
     action:string ->
     meth:Tags.form_method ->
     Tags.form_field list ->

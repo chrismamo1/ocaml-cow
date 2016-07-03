@@ -507,19 +507,19 @@ module Create = struct
       Xml.tag "table" rows
     in aux
 
-  let form ~action ~(meth:form_method) =
+  let form ?(name = None) ?(attrs = []) ~action ~(meth:form_method) =
     (* partially applying the [Xml.tag] function at the very beginning in order
      * to create a more smooth performance profile when this function is
      * partially applied. I'm not 100% sure that this will actually work, but it
      * can't possibly hurt anything. [form_bldr] function will be seen again at
      * the very end of this function. *)
-    let form_bldr =
-      Xml.tag
-        "form"
-        ~attrs:
-          [ "action", action
-          ; "method", (match meth with `GET -> "get" | `POST -> "post")]
+    let attrs =
+      ("action", action)
+      :: ("method", (match meth with `GET -> "get" | `POST -> "post"))
+      :: match name with None -> [] | Some name -> ("name", name)
+      :: attrs
     in
+    let form_bldr = Xml.tag "form" ~attrs in
     fun (fields : Tags.form_field list) ->
       (* start by walking through the list of form fields and converting each
        * one into an Xml.t representation. The XML representation consists of a
@@ -607,6 +607,8 @@ module Create = struct
           fields
       in
       form_bldr (Xml.list fields)
+
+  
 end
 
 let script ?src ?typ ?charset body =
