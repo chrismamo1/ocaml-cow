@@ -257,22 +257,22 @@ Cow.Html.Create.form ~action:"login" ~meth:`POST form_fields
      which produces the following HTML:
 {%html
 <!DOCTYPE html>
-<form action="login" method="post">
+<form action="login" class="cow_form" method="post">
   <div>
-    <label for="cowlabel_username">Username</label>
+    <label for="cowlabel_username" class="cow_formlabel">Username</label>
     <span name="cowlabel_username">
-      <input name="username" type="text"></input>
+      <input name="username" type="text" class="cow_formitem_text"></input>
     </span>
   </div>
   <div>
-    <label for="cowlabel_password">Password</label>
+    <label for="cowlabel_password" class="cow_formlabel">Password</label>
     <span name="cowlabel_password">
-      <input name="password" type="password"/>
+      <input name="password" type="password" class="cow_formitem_password"/>
     </span>
   </div>
   <div>
     <span name="cowlabel_submit">
-      <input type="submit" name="submit"/>
+      <input type="submit" name="submit" class="cow_formitem_submit"/>
     </span>
   </div>
 </form>
