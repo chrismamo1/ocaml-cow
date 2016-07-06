@@ -499,12 +499,12 @@ module Create = struct
               |> List.map (fun r ->
                   let hcell = List.hd r in
                   let rest = List.flatten @@ cellify [List.tl r] in
-                  th hcell:: rest)
+                  th hcell :: rest)
             in hrow :: rest
       in
       let rows = List.map (fun r -> let r = List.flatten r in tr r) rows in
       let rows = concat rows in
-      Xml.tag "table" rows
+      Xml.tag "table" ~attrs:["class", "cow_table"] rows
     in aux
 
   let form ?(name = None) ?(attrs = []) ~action ~(meth:form_method) =
@@ -515,6 +515,7 @@ module Create = struct
      * the very end of this function. *)
     let attrs =
       ("action", action)
+      :: ("class", "cow_form")
       :: ("method", (match meth with `GET -> "get" | `POST -> "post"))
       :: match name with None -> [] | Some name -> ("name", name)
       :: attrs
@@ -533,7 +534,7 @@ module Create = struct
               | Some label ->
                 Xml.tag
                   "label"
-                  ~attrs:["for", "cowlabel_" ^ name]
+                  ~attrs:["for", "cowlabel_" ^ name; "class", "cow_formlabel"]
                   (Xml.string label)
               | None ->
                   Xml.empty
@@ -545,7 +546,8 @@ module Create = struct
                     "input"
                     ~attrs:
                       [ "name", name
-                      ; "type", "text" ]
+                      ; "type", "text"
+                      ; "class", "cow_formitem_text" ]
                     (Xml.string default)
               | `Radio values ->
                   let builder v : t =
@@ -554,7 +556,8 @@ module Create = struct
                       ~attrs:
                         [ "name", name
                         ; "type", "radio"
-                        ; "value", v ]
+                        ; "value", v
+                        ; "class", "cow_formitem_radio" ]
                       (Xml.string v)
                   in
                   List.fold_left
@@ -565,7 +568,10 @@ module Create = struct
               | `Submit ->
                   Xml.tag
                     "input"
-                    ~attrs:["type", "submit"; "name", name]
+                    ~attrs:
+                      [ "type", "submit"
+                      ; "name", name
+                      ; "class", "cow_formitem_submit" ]
                     Xml.empty
               | `Select options ->
                   let options =
@@ -573,7 +579,9 @@ module Create = struct
                       (fun o ->
                         Xml.tag
                           "option"
-                          ~attrs:["value", o]
+                          ~attrs:
+                            [ "value", o
+                            ; "class", "cow_formitem_select_option"]
                           (Xml.string o))
                       options
                   in
@@ -583,12 +591,16 @@ module Create = struct
                       (List.hd options)
                       (List.tl options)
                   in
-                  Xml.tag "select" ~attrs:["name", name] options
+                  Xml.tag
+                    "select"
+                    ~attrs:["name", name; "class", "cow_formitem_select"]
+                    options
               | `Textarea (default, rows, cols) ->
                   Xml.tag
                     "textarea"
                     ~attrs:
                       [ "name", name
+                      ; "class", "cow_formitem_textarea"
                       ; "rows", string_of_int rows
                       ; "cols", string_of_int cols ]
                     (Xml.string default)
@@ -597,7 +609,8 @@ module Create = struct
                     "input"
                     ~attrs:
                       [ "name", name
-                      ; "type", "password" ]
+                      ; "type", "password"
+                      ; "class", "cow_formitem_password" ]
                     Xml.empty
             in
             input
@@ -607,8 +620,6 @@ module Create = struct
           fields
       in
       form_bldr (Xml.list fields)
-
-  
 end
 
 let script ?src ?typ ?charset body =
